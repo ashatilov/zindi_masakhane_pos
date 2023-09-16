@@ -117,7 +117,7 @@ if __name__ == "__main__":
 
     # parameters
     DATA_FOLDER = Path("data")
-    DATA_FOLDER_TRAIN = "../masakhane-pos/data"
+    DATA_FOLDER_TRAIN = Path("../masakhane-pos/data")
 
     LORA = args.lora
     MODEL_NAME = "facebook/nllb-200-distilled-600M"
