@@ -22,7 +22,9 @@ from transformers import (
     set_seed,
 )
 
-from masakhane_pos.m2m_100_encoder.modeling_m2m_100 import M2M100ForTokenClassification
+from masakhane_pos.m2m_100_encoder.modeling_m2m_100 import (
+    M2M100ForTokenClassification,
+)
 from masakhane_pos.utils import (
     ID2LABEL,
     LABEL2ID,
@@ -61,6 +63,16 @@ top_langs = [
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--train_folder",
+        default="masakhane-pos/data",
+        help="Path to train data",
+    )
+    parser.add_argument(
+        "--test_folder",
+        default="zindi_masakhane_pos/data",
+        help="Path to train data",
+    )
     parser.add_argument(
         "-l",
         "--languages",
@@ -114,8 +126,8 @@ if __name__ == "__main__":
     languages_train = args.languages[0].split(" ")
 
     # parameters
-    DATA_FOLDER = Path("data")
-    DATA_FOLDER_TRAIN = Path("masakhane-pos/data")
+    DATA_FOLDER_TEST = Path(args.test_folder)
+    DATA_FOLDER_TRAIN = Path(args.train_folder)
 
     LORA = args.lora
     MODEL_NAME = "facebook/nllb-200-distilled-600M"
@@ -157,8 +169,8 @@ if __name__ == "__main__":
 
     # load data
     df_train = load_train_data(DATA_FOLDER_TRAIN)
-    df_test = load_test_data(DATA_FOLDER / "Test.csv")
-    df_sub = pd.read_csv(DATA_FOLDER / "SampleSubmission.csv")
+    df_test = load_test_data(DATA_FOLDER_TEST / "Test.csv")
+    df_sub = pd.read_csv(DATA_FOLDER_TEST / "SampleSubmission.csv")
 
     # prepare tokenizer and dataset
     tokenizer = NllbTokenizerFast.from_pretrained(MODEL_NAME)
