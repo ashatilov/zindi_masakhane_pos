@@ -22,9 +22,7 @@ from transformers import (
     set_seed,
 )
 
-from masakhane_pos.m2m_100_encoder.modeling_m2m_100 import (
-    M2M100ForTokenClassification,
-)
+from masakhane_pos.m2m_100_encoder.modeling_m2m_100 import M2M100ForTokenClassification
 from masakhane_pos.utils import (
     ID2LABEL,
     LABEL2ID,
@@ -117,7 +115,7 @@ if __name__ == "__main__":
 
     # parameters
     DATA_FOLDER = Path("data")
-    DATA_FOLDER_TRAIN = Path("../masakhane-pos/data")
+    DATA_FOLDER_TRAIN = Path("masakhane-pos/data")
 
     LORA = args.lora
     MODEL_NAME = "facebook/nllb-200-distilled-600M"
