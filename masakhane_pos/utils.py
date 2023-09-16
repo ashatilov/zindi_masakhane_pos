@@ -6,7 +6,9 @@ import evaluate
 import numpy as np
 import pandas as pd
 from datasets import Dataset, DatasetDict
-from transformers import TrainerCallback
+from transformers import TrainerCallback, set_seed
+
+set_seed(19)
 
 LABEL2ID = {
     "NOUN": 0,
