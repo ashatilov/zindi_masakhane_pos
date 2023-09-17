@@ -10,6 +10,8 @@ from transformers import TrainerCallback, set_seed
 
 set_seed(19)
 
+
+# constants
 LABEL2ID = {
     "NOUN": 0,
     "VERB": 1,
@@ -65,6 +67,7 @@ class ParseError(Exception):
 
 
 def load_pos_file(file_path: Path) -> list[dict]:
+    """Loads txt file with POS labels to list of dicts"""
     data = []
     with open(file_path, "r", encoding="utf-8") as f:
         sentence_id = 0
@@ -94,6 +97,7 @@ def load_pos_file(file_path: Path) -> list[dict]:
 
 
 def load_train_data(input_folder: Path) -> pd.DataFrame:
+    """Loads all train data into pandas DataFrame"""
     train_data = []
     for folder in input_folder.glob("*"):
         if folder.is_dir():
@@ -112,6 +116,7 @@ def load_train_data(input_folder: Path) -> pd.DataFrame:
 
 
 def load_test_data(input_file: Path) -> pd.DataFrame:
+    """Loads test data into pandas DataFrame"""
     df_test = pd.read_csv(input_file)
     df_test.columns = ["id", "word", "lang", "pos"]  # make same names
     df_test["split"] = "test"
@@ -123,25 +128,9 @@ def load_test_data(input_file: Path) -> pd.DataFrame:
     return df_test
 
 
-def prepare_tokenizer(tokenizer, lang_token, additional_tokens):
-    additional_tokens = [lang_token] + additional_tokens
-    new_special_tokens = (
-        tokenizer.additional_special_tokens + additional_tokens
-    )
-    tokenizer.add_special_tokens(
-        {"additional_special_tokens": new_special_tokens}
-    )
-    lang_token_id = tokenizer.encode(lang_token, add_special_tokens=False)[0]
-    # add id to lang_code and lang_code to id
-    tokenizer.id_to_lang_code[lang_token_id] = lang_token
-    tokenizer.lang_code_to_id[lang_token] = lang_token_id
-    tokenizer.tgt_lang = lang_token
-
-    return tokenizer
-
-
 def tokenize_inputs(example, tokenizer):
-    # works without batching only
+    """Prepare inputs for model
+    processed only one example, doesn't work with batching"""
     tokenizer.src_lang = NLLB_LANG_MAP.get(example["lang"])
     tokenized_inputs = tokenizer(
         example["word"], is_split_into_words=True, add_special_tokens=True
@@ -153,6 +142,8 @@ def tokenize_inputs(example, tokenizer):
 
 
 def align_labels(example):
+    """Aligns labels with input tokens.
+    Labels only first token of multitoken words."""
     label_ids = []
     previous_word_idx = None
     for word_idx in example["word_ids"]:
@@ -169,9 +160,10 @@ def align_labels(example):
 
 
 def make_dataset(df_train: pd.DataFrame, df_test: pd.DataFrame, tokenizer):
-    # combine initial test of masakhane_pos with train, validate in dev
+    """Main function that prepares dataset"""
+    # Combines initial test of masakhane_pos with train. Will validate on dev
     # so we have 2 splits: train (initial train + initial test) and dev
-    # new test will be lua and tsn languages not presented in initial dataset
+    # new test will be lua and tsn languages not presented in masakhane-pos dataset
     df_train.loc[df_train["split"] == "test", "split"] = "train"
 
     # add constant label to test for easier processing predictions later
@@ -219,7 +211,7 @@ def make_dataset(df_train: pd.DataFrame, df_test: pd.DataFrame, tokenizer):
         batched=False,
     )
 
-    # removing excess columns
+    # remove excess columns
     columns_to_remove = [
         "split",
         # "lang",
@@ -231,7 +223,7 @@ def make_dataset(df_train: pd.DataFrame, df_test: pd.DataFrame, tokenizer):
 
 
 def make_dataset_pseudo(test_pred_file, df_test, tokenizer):
-    """Make dataset with luo and tsn data labeled by model trained on masakhane_pos data"""
+    """Makes dataset with luo and tsn data labeled by model trained on masakhane_pos data"""
     df_test_pred = pd.read_csv(test_pred_file)
     df_pseudo = df_test.copy()
     df_pseudo["pos"] = df_test_pred["Pos"]
@@ -290,7 +282,7 @@ def compute_metrics(p: tuple):
 
 
 class PredictAndSaveCallback(TrainerCallback):
-    """Predict labels for test dataset and save them to csv on each validation step"""
+    """Predicts labels for test dataset and saves them to csv on each validation step"""
 
     def __init__(self, trainer, test_dataset, df_sub, run_name, out_dir):
         self.trainer = trainer
@@ -311,6 +303,7 @@ class PredictAndSaveCallback(TrainerCallback):
             [ID2LABEL[p] for (p, l) in zip(prediction, label) if l != -100]
             for prediction, label in zip(predictions, labels)
         ]
+
         # make id to prediction mapping in case of shuffle
         id2pred = {}
         for sent_id, sent_pred in zip(
@@ -319,8 +312,10 @@ class PredictAndSaveCallback(TrainerCallback):
             for i, pred_pos_i in enumerate(sent_pred):
                 id2pred[f"{sent_id}_{i}"] = pred_pos_i
         self.df_sub["Pos"] = self.df_sub["Id"].map(id2pred)
-        # fix for one sentence with only #REF! instead of words
-        # predict NOUN (most common) and PUNCT in the end
+
+        # fix for Idrj73rnn90a sentence in test dataset with #REF! instead of words
+        # predict NOUN (most common) and PUNCT in the end for it
+        # because it is impossible to get a proper prediction when inputs are not words but only #REF!
         self.df_sub.loc[
             self.df_sub["Id"].str.startswith("Idrj73rnn90a"), "Pos"
         ] = "NOUN"

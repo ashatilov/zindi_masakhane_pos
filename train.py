@@ -125,7 +125,7 @@ if __name__ == "__main__":
     # train on the given languages, validate on all other presented in the dataset
     languages_train = args.languages[0].split(" ")
 
-    # parameters
+    # set parameters
     DATA_FOLDER_TEST = Path(args.test_folder)
     DATA_FOLDER_TRAIN = Path(args.train_folder)
 
@@ -172,7 +172,7 @@ if __name__ == "__main__":
     df_test = load_test_data(DATA_FOLDER_TEST / "Test.csv")
     df_sub = pd.read_csv(DATA_FOLDER_TEST / "SampleSubmission.csv")
 
-    # prepare tokenizer and dataset
+    # load tokenizer and prepare dataset
     tokenizer = NllbTokenizerFast.from_pretrained(MODEL_NAME)
     dataset = make_dataset(df_train, df_test, tokenizer)
     if languages_train[0] != "all":
@@ -206,6 +206,7 @@ if __name__ == "__main__":
         label2id=LABEL2ID,
     )
 
+    # prepare LoRA
     if LORA:
         lora_config = LoraConfig(
             r=16,
