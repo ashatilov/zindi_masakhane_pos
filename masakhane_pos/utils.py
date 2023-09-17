@@ -312,16 +312,6 @@ class PredictAndSaveCallback(TrainerCallback):
             for i, pred_pos_i in enumerate(sent_pred):
                 id2pred[f"{sent_id}_{i}"] = pred_pos_i
         self.df_sub["Pos"] = self.df_sub["Id"].map(id2pred)
-
-        # fix for Idrj73rnn90a sentence in test dataset with #REF! instead of words
-        # predict NOUN (most common) and PUNCT in the end for it
-        # because it is impossible to get a proper prediction when inputs are not words but only #REF!
-        self.df_sub.loc[
-            self.df_sub["Id"].str.startswith("Idrj73rnn90a"), "Pos"
-        ] = "NOUN"
-        self.df_sub.loc[self.df_sub["Id"] == "Idrj73rnn90a_26", "Pos"] = (
-            "PUNCT"
-        )
         self.df_sub.to_csv(
             self.out_dir / f"xx_{self.run_name}_{state.global_step}.csv",
             index=False,
