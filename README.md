@@ -1,7 +1,7 @@
 # Lacuna Masakhane Parts of Speech Classification Challenge
 
 
-# [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ashatilov/zindi_masakhane_pos/blob/main/train.ipynb)
+# [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ashatilov/zindi_masakhane_pos/blob/master/train.ipynb)
 
 ## Data
 
@@ -22,7 +22,7 @@ All data processing and utility functions are defined in [masakhane_pos/utils.py
 Training script: [train.py](train.py#L64)
 
 Notebook with full code to reproduce solution: [train.ipynb](train.ipynb) - open and run it in Google Colab, full training takes about 30 minutes.
- [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ashatilov/zindi_masakhane_pos/blob/main/train.ipynb)
+ [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ashatilov/zindi_masakhane_pos/blob/master/train.ipynb)
 
 ## Finding the best solution process
 
